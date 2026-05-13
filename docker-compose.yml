@@ -13,6 +13,7 @@ services:
       - "3306:3306"  # Opcional, solo si necesitas acceso externo
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d 
     networks:
       - app-network
 
@@ -36,7 +37,7 @@ services:
     container_name: backend_ventas
     restart: always
     ports:
-      - "8081:8081"
+      - "8083:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ventasdb?useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: userdb
