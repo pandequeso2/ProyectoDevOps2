@@ -11,7 +11,6 @@ jobs:
   maven-checks:
     strategy:
       matrix:
-        # Nombres de las carpetas principales de los microservicios
         microservice: [ back-Despachos_SpringBoot, back-Ventas_SpringBoot ]
     runs-on: ubuntu-latest
     steps:
@@ -27,18 +26,15 @@ jobs:
 
       - name: 🧪 Ejecutar tests y Build
         run: |
-          # 1. Entrar a la carpeta backend
+          # Navegación dinámica según el microservicio
           cd backend/${{ matrix.microservice }}
           
-          # 2. Entrar a la subcarpeta del proyecto (donde está el pom.xml y mvnw)
-          # Usamos un comodín * o validamos el nombre exacto
           if [ "${{ matrix.microservice }}" == "back-Despachos_SpringBoot" ]; then
             cd Springboot-API-REST-DESPACHO
           else
             cd Springboot-API-REST
           fi
           
-          # 3. Dar permisos y ejecutar
           chmod +x mvnw
           ./mvnw clean package -DskipTests
 
@@ -57,7 +53,6 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          # Ruta al package-lock para la caché
           cache-dependency-path: front_despacho/package-lock.json
 
       - name: 📦 Instalar dependencias
