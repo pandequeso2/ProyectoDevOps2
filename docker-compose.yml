@@ -17,11 +17,11 @@ services:
       - app-network
 
   backend-despachos:
-    build: ./backend/back-Despachos-SpringBoot   # Contexto = carpeta del microservicio
+    build: ./backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO   # Contexto = carpeta del microservicio
     container_name: backend_despachos
     restart: always
     ports:
-      - "8081:8080"   # Mapea el 8080 interno del contenedor al 8081 del host
+      - "8080:8080"   # Mapea el 8080 interno del contenedor al 8081 del host
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/despachosdb?useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: userdb
@@ -32,11 +32,11 @@ services:
       - app-network
 
   backend-ventas:
-    build: ./backend/back-Ventas_SpringBoot
+    build: ./backend/back-Ventas_SpringBoot/Springboot-API-REST
     container_name: backend_ventas
     restart: always
     ports:
-      - "8082:8080"
+      - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ventasdb?useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: userdb

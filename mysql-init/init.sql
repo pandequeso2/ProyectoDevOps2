@@ -1,0 +1,5 @@
+CREATE DATABASE IF NOT EXISTS despachosdb;
+CREATE DATABASE IF NOT EXISTS ventasdb;
+GRANT ALL PRIVILEGES ON despachosdb.* TO 'userdb'@'%';
+GRANT ALL PRIVILEGES ON ventasdb.* TO 'userdb'@'%';
+FLUSH PRIVILEGES;
