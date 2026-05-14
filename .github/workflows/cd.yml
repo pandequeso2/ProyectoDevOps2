@@ -1,0 +1,78 @@
+name: Despliegue continuo (CD)
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY_PREFIX: devops-u2
+  ECS_CLUSTER: devops-u2-cluster
+  ECS_SERVICE_DESPACHOS: servicio-despachos
+  ECS_SERVICE_VENTAS: servicio-ventas
+  ECS_SERVICE_FRONTEND: servicio-frontend
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Obtener el código
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      # 2. Configurar credenciales de AWS (usa los secretos de GitHub)
+      - name: Configurar AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # 3. Loguearse en Amazon ECR
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # 4. Construir y subir imagen de backend-despachos
+      - name: Build & Push backend-despachos
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO
+          push: true
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-backend-despachos:latest
+          platforms: linux/amd64
+
+      # 5. Construir y subir imagen de backend-ventas
+      - name: Build & Push backend-ventas
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend/back-Ventas_SpringBoot/Springboot-API-REST
+          push: true
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-backend-ventas:latest
+          platforms: linux/amd64
+
+      # 6. Construir y subir imagen de frontend
+      - name: Build & Push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./front_despacho
+          push: true
+          tags: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY_PREFIX }}-frontend:latest
+          platforms: linux/amd64
+
+      # 7. (Opcional) Forzar redespliegue en ECS si ya tienes los servicios creados
+      - name: Forzar redespliegue en ECS (Despachos)
+        if: false  # Cambia a 'true' cuando tengas el clúster ECS listo
+        run: |
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE_DESPACHOS }} --force-new-deployment
+
+      - name: Forzar redespliegue en ECS (Ventas)
+        if: false
+        run: |
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE_VENTAS }} --force-new-deployment
+
+      - name: Forzar redespliegue en ECS (Frontend)
+        if: false
+        run: |
+          aws ecs update-service --cluster ${{ env.ECS_CLUSTER }} --service ${{ env.ECS_SERVICE_FRONTEND }} --force-new-deployment
