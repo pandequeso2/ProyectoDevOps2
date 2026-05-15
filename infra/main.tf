@@ -429,6 +429,11 @@ resource "aws_instance" "mysql_srv" {
   subnet_id              = aws_subnet.private_subnet_1.id
   vpc_security_group_ids = [aws_security_group.mysql_sg.id]
   key_name               = var.key_name
+  root_block_device {
+    volume_type = "gp3"        # Tipo de volumen (gp3 es más barato y rápido que gp2)
+    volume_size = 20           # Tamaño en GB
+    delete_on_termination = true  # Se elimina al destruir la instancia (opcional)
+  }
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
