@@ -2,10 +2,10 @@ name: Despliegue continuo (CD)
 
 on:
   pull_request:
-    branches: [ deploy ]
+    branches: [ main ]
   push:
     branches:
-      - deploy   # ← Cambiado a 'deploy' según requerimiento EP2
+      - main   # ← Cambiado a 'deploy' según requerimiento EP2
 
 env:
   AWS_REGION: us-east-1
