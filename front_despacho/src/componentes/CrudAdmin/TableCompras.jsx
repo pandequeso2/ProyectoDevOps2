@@ -7,15 +7,19 @@ export const TableCompras = () => {
   const [ventas, setVentas] = useState([]);
 
   const compras = async () => {
-    await axios.get("/api/v1/ventas", {
-      headers:{
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-  }
-    }).then((response) => {
-      console.log(response.data);
-      setVentas(response.data);
-    });
+    try {
+      const response = await axios.get("/api/v1/ventas", {
+        headers:{
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      const data = Array.isArray(response.data) ? response.data : [];
+      setVentas(data);
+    } catch (error) {
+      console.error("Error al obtener ventas:", error);
+      setVentas([]);
+    }
   };
   // Llamada a la función para obtener los datos cuando el componente se monta
   useEffect(() => {

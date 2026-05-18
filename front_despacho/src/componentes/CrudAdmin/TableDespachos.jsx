@@ -7,17 +7,19 @@ export const TableDespachos = () => {
   const [despachos, setDespachos] = useState([]);
 
   const despacho = async () => {
-    await axios
-      .get("/api/v1/despachos", {
+    try {
+      const response = await axios.get("/api/v1/despachos", {
         headers:{
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
-      })
-      .then((response) => {
-        console.log(response.data);
-        setDespachos(response.data);
       });
+      const data = Array.isArray(response.data) ? response.data : [];
+      setDespachos(data);
+    } catch (error) {
+      console.error("Error al obtener despachos:", error);
+      setDespachos([]);
+    }
   };
   // Llamada a la función para obtener los datos cuando el componente se monta
   useEffect(() => {
