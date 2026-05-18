@@ -16,5 +16,5 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 COPY --from=builder /build/target/*.jar app.jar
 COPY entrypoint.sh /entrypoint.sh
 USER appuser
-EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]

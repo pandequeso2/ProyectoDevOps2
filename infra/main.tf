@@ -144,8 +144,15 @@ resource "aws_security_group" "ecs_tasks_sg" {
   }
 
   ingress {
-    from_port       = 8080
-    to_port         = 8080
+    from_port       = 8081
+    to_port         = 8081
+    protocol        = "tcp"
+    security_groups = [aws_security_group.alb_sg.id]
+  }
+
+  ingress {
+    from_port       = 8082
+    to_port         = 8082
     protocol        = "tcp"
     security_groups = [aws_security_group.alb_sg.id]
   }
@@ -240,8 +247,8 @@ resource "aws_ecs_task_definition" "frontend_task" {
       protocol      = "tcp"
     }]
     environment = [
-      { name = "BACKEND_DESPACHOS_URL", value = "http://localhost:8080" },
-      { name = "BACKEND_VENTAS_URL", value = "http://localhost:8083" }
+      { name = "BACKEND_DESPACHOS_URL", value = "http://localhost:8081" },
+      { name = "BACKEND_VENTAS_URL", value = "http://localhost:8082" }
     ]
     logConfiguration = {
       logDriver = "awslogs"
@@ -269,8 +276,8 @@ resource "aws_ecs_task_definition" "backend_despachos_task" {
     image     = "${aws_ecr_repository.repo_despachos.repository_url}:latest"
     essential = true
     portMappings = [{
-      containerPort = 8080
-      hostPort      = 8080
+      containerPort = 8081
+      hostPort      = 8081
       protocol      = "tcp"
     }]
     environment = [
@@ -304,8 +311,8 @@ resource "aws_ecs_task_definition" "backend_ventas_task" {
     image     = "${aws_ecr_repository.repo_ventas.repository_url}:latest"
     essential = true
     portMappings = [{
-      containerPort = 8083
-      hostPort      = 8083
+      containerPort = 8082
+      hostPort      = 8082
       protocol      = "tcp"
     }]
     environment = [
@@ -344,6 +351,32 @@ resource "aws_lb_target_group" "frontend_tg" {
   tags = { Name = "tg-devops-frontend" }
 }
 
+resource "aws_lb_target_group" "despachos_tg" {
+  name        = "despachos-tg-devops"
+  port        = 8081
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.devops_vpc.id
+  target_type = "ip"
+  health_check {
+    path = "/actuator/health"
+    matcher = "200"
+  }
+  tags = { Name = "tg-devops-despachos" }
+}
+
+resource "aws_lb_target_group" "ventas_tg" {
+  name        = "ventas-tg-devops"
+  port        = 8082
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.devops_vpc.id
+  target_type = "ip"
+  health_check {
+    path = "/actuator/health"
+    matcher = "200"
+  }
+  tags = { Name = "tg-devops-ventas" }
+}
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.front_alb.arn
   port              = "80"
@@ -354,6 +387,38 @@ resource "aws_lb_listener" "http" {
     target_group_arn = aws_lb_target_group.frontend_tg.arn
   }
   tags = { Name = "listener-devops-http" }
+}
+
+resource "aws_lb_listener_rule" "despachos_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 10
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.despachos_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v1/despachos*"]
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "ventas_rule" {
+  listener_arn = aws_lb_listener.http.arn
+  priority     = 20
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.ventas_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/api/v1/ventas*"]
+    }
+  }
 }
 
 # ====== 7. ECS SERVICES ======
@@ -392,6 +457,14 @@ resource "aws_ecs_service" "backend_despachos_service" {
     security_groups  = [aws_security_group.ecs_tasks_sg.id]
     assign_public_ip = false
   }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.despachos_tg.arn
+    container_name   = "backend-despachos"
+    container_port   = 8081
+  }
+
+  depends_on = [aws_lb_listener_rule.despachos_rule]
   tags = { Name = "ecs-svc-devops-despachos" }
 }
 
@@ -407,6 +480,14 @@ resource "aws_ecs_service" "backend_ventas_service" {
     security_groups  = [aws_security_group.ecs_tasks_sg.id]
     assign_public_ip = false
   }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.ventas_tg.arn
+    container_name   = "backend-ventas"
+    container_port   = 8082
+  }
+
+  depends_on = [aws_lb_listener_rule.ventas_rule]
   tags = { Name = "ecs-svc-devops-ventas" }
 }
 
@@ -437,15 +518,19 @@ resource "aws_instance" "mysql_srv" {
 
   user_data = base64encode(<<-EOF
     #!/bin/bash
-    sudo yum update -y
-    sudo yum install -y docker
+    sudo apt-get update -y
+    sudo apt-get install -y docker.io
     sudo systemctl start docker
-    sudo usermod -a -G docker ec2-user
+    sudo systemctl enable docker
+    sudo usermod -aG docker ubuntu
 
     mkdir -p /opt/mysql-init
     cat > /opt/mysql-init/init.sql <<SQL
     CREATE DATABASE IF NOT EXISTS despachosdb;
     CREATE DATABASE IF NOT EXISTS ventasdb;
+    GRANT ALL PRIVILEGES ON despachosdb.* TO 'userdb'@'%';
+    GRANT ALL PRIVILEGES ON ventasdb.* TO 'userdb'@'%';
+    FLUSH PRIVILEGES;
     SQL
 
     docker run -d \

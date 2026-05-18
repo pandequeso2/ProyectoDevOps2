@@ -22,7 +22,7 @@ services:
     container_name: backend_despachos
     restart: always
     ports:
-      - "8080:8080"   # Mapea el 8080 interno del contenedor al 8081 del host
+      - "8081:8081"   # Mapea el 8081 interno del contenedor al 8081 del host
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/despachosdb?useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: userdb
@@ -37,7 +37,7 @@ services:
     container_name: backend_ventas
     restart: always
     ports:
-      - "8083:8083"
+      - "8082:8082"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ventasdb?useSSL=false&allowPublicKeyRetrieval=true
       SPRING_DATASOURCE_USERNAME: userdb
