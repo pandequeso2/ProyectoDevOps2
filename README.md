@@ -65,7 +65,7 @@ docker-compose up -d --build
 
 
 
-Acceder al Frontend a través de http://localhost.
+Acceder al Frontend a través de devops-alb-452824622.us-east-1.elb.amazonaws.com.
 
 Desarrollado por: Francisco Díaz y Benjamin Araya
 
