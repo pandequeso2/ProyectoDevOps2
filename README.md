@@ -72,3 +72,19 @@ Desarrollado por: Francisco Díaz y Benjamin Araya
 Asignatura: Introducción a Herramientas DevOps (ISY1101)
 
 Institución: Duoc UC
+
+
+
+Experiencia 3:
+Descargar Imagenes locales:
+backend-despacho: docker buildx build -t backend-despachos:latest -f ./backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO/Dockerfile ./backend/back-Despachos_SpringBoot/Springboot-API-REST-DESPACHO/ 
+
+backend-ventas: docker buildx build -t backend-ventas:latest -f ./backend/back-Ventas_SpringBoot/Springboot-API-REST/Dockerfile ./backend/back-Ventas_SpringBoot/Springboot-API-REST/ 
+
+frontend: docker buildx build -t front-despacho:latest -f ./front_despacho/Dockerfile ./front_despacho/
+
+Crear Pods: 
+kubectl apply -f .
+
+Ver que los pods este corriendo.
+kubectl get pods
