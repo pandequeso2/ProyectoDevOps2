@@ -33,9 +33,10 @@ kind: Service
 metadata:
   name: backend-despacho
 spec:
+  type: NodePort 
   selector:
     app: backend-despacho
   ports:
     - port: 8081
       targetPort: 8081
-  type: ClusterIP
+      nodePort: 30081

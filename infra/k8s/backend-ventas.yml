@@ -33,9 +33,10 @@ kind: Service
 metadata:
   name: backend-ventas
 spec:
+  type: NodePort # <--- Cambiar de ClusterIP a NodePort
   selector:
     app: backend-ventas
   ports:
     - port: 8082
       targetPort: 8082
-  type: ClusterIP
+      nodePort: 30082
