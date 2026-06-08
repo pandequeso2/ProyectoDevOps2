@@ -119,8 +119,4 @@ jobs:
       - name: Obtener URL del Frontend (LoadBalancer)
         run: |
           kubectl get svc frontend-despacho
-          echo "--------------------------------------------------"
-          echo "URL del Balanceador de Carga para el Frontend:"
           kubectl get service frontend-despacho -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || echo "Buscando dirección..."
-          echo ""
-          echo "--------------------------------------------------"

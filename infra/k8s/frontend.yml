@@ -15,9 +15,9 @@ spec:
     spec:
       containers:
         - name: frontend-despacho
-          image: frontend-despacho:latest
+          image: 992382589430.dkr.ecr.us-east-1.amazonaws.com/frontend-despacho
           #no descargar la imagen desde Docker Hub, sinó que local.
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
 ---
@@ -35,4 +35,4 @@ spec:
       #Puerto expuesto en el nodo de kubernet:
       nodePort: 30080
   #NodePort: expone el servicio fuera de cluster kubernet:
-  type: NodePort
+  type: LoadBalancer
