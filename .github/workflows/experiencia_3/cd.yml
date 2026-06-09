@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       AWS_REGION: us-east-1
-      CLUSTER_NAME: devops-cluster # Nombre anterior del clúster
+      CLUSTER_NAME: devops-proyect-cluster 
     steps:
       - name: Checkout (git clone...)
         uses: actions/checkout@v4
