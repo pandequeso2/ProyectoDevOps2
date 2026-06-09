@@ -1,6 +1,8 @@
 name: Despliegue en AWS con EKS (Elastic Kubernetes Service) - Experiencia 3
 
 on:
+  pull_request:
+    branches: [ develop ]
   push:
     branches:
       - develop
