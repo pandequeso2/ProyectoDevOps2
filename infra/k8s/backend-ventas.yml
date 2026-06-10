@@ -39,4 +39,4 @@ spec:
   ports:
     - port: 8082
       targetPort: 8082
-      nodePort: 30082
+      # NO incluyas nodePort aquí cuando type es ClusterIP
