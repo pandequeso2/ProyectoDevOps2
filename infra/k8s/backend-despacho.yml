@@ -33,7 +33,7 @@ kind: Service
 metadata:
   name: backend-despacho
 spec:
-  type: ClusterIp
+  type: ClusterIP
   selector:
     app: backend-despacho
   ports:
