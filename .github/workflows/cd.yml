@@ -91,6 +91,21 @@ jobs:
         run: |
           kubectl apply -f infra/k8s/
           
+      - name: Aplicar HPA (Horizontal Pod Autoscaler)
+        run: |
+          # Crear HPA si el archivo existe
+          if [ -f "infra/k8s/hpa.yaml" ]; then
+            kubectl apply -f infra/k8s/hpa.yaml
+            echo "HPA aplicado correctamente"
+          else
+            echo "⚠️ Archivo hpa.yaml no encontrado. El autoscaling no estará disponible."
+          fi
+          
+      - name: Verificar HPA
+        run: |
+          echo "=== HPA Status ==="
+          kubectl get hpa || echo "No HPA found"
+          
       - name: Actualizar nombre de la imagen de backend-despachos en Kubernetes
         run: |
           kubectl set image deployment/backend-despacho \
@@ -108,17 +123,42 @@ jobs:
       
       - name: Esperar despliegue de backend-despacho
         run: |
-          kubectl rollout status deployment/backend-despacho
+          kubectl rollout status deployment/backend-despacho --timeout=5m
           
       - name: Esperar despliegue de backend-ventas
         run: |
-          kubectl rollout status deployment/backend-ventas
+          kubectl rollout status deployment/backend-ventas --timeout=5m
           
       - name: Esperar despliegue de frontend-despacho
         run: |
-          kubectl rollout status deployment/frontend-despacho
+          kubectl rollout status deployment/frontend-despacho --timeout=5m
+
+      - name: Esperar que HPA esté activo
+        run: |
+          echo "Esperando que HPA se active..."
+          sleep 10
+          kubectl get hpa
 
       - name: Obtener URL del Frontend (LoadBalancer)
         run: |
-          kubectl get svc frontend-despacho
-          kubectl get service frontend-despacho -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || echo "Buscando dirección..."
+          echo "=== Servicios desplegados ==="
+          kubectl get svc
+          echo ""
+          echo "=== URL del Frontend ==="
+          kubectl get service frontend-despacho -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' || echo "Esperando asignación de LoadBalancer..."
+          echo ""
+
+      - name: Mostrar resumen del despliegue
+        run: |
+          echo "=========================================="
+          echo "✅ DESPLIEGUE COMPLETADO EXITOSAMENTE"
+          echo "=========================================="
+          echo ""
+          echo "📊 Estado de los Pods:"
+          kubectl get pods
+          echo ""
+          echo "📊 Estado de los Servicios:"
+          kubectl get svc
+          echo ""
+          echo "📊 Autoscaling (HPA):"
+          kubectl get hpa
