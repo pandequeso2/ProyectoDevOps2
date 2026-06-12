@@ -1,1 +1,11 @@
-*terraform*
+# Terraform local files
+**/.terraform/
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.backup
+
+# Terraform crash logs
+**/*crash.log
+
+# Executables
+**/*.exe
